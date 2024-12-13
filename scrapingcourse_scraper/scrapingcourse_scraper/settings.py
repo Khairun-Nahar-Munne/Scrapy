@@ -66,7 +66,12 @@ CONCURRENT_REQUESTS=1
 #ITEM_PIPELINES = {
 #    "scrapingcourse_scraper.pipelines.ScrapingcourseScraperPipeline": 300,
 #}
+DATABASE_URL = "postgresql+psycopg2://munne:munne123@postgres:5432/scraping_db"
 
+# Configure item pipelines
+ITEM_PIPELINES = {
+    'scrapingcourse_scraper.pipelines.ScrapingcourseScraperPipeline': 1,
+}
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True
