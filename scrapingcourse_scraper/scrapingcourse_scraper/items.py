@@ -5,8 +5,13 @@
 
 import scrapy
 
-
 class ScrapingcourseScraperItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    city_id = scrapy.Field()
+    hotelName = scrapy.Field()
+    hotelAddress = scrapy.Field()
+    hotelImg = scrapy.Field()
+    price = scrapy.Field()
+    rating = scrapy.Field()  # Updated field
+    roomType = scrapy.Field()  # Updated field
+    lat = scrapy.Field()
+    lng = scrapy.Field()

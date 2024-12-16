@@ -91,8 +91,8 @@ class ScraperSpider(scrapy.Spider):
                             "hotelAddress": hotel_address,
                             "hotelImg": hotel_img,
                             "price": price,
-                            "commentScore": comment_score,
-                            "physicalRoomName": physical_room_name,
+                            "rating": comment_score,
+                            "roomType": physical_room_name,
                             "lat": lat,
                             "lng": lng
                         }
