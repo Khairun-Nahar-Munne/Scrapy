@@ -23,6 +23,8 @@ class Hotel(Base):
     def __repr__(self):
         return f"<Hotel(name={self.hotel_name}, city_id={self.city_id})>"
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://munne:munne123@postgres:5432/scraping_db")
-engine = create_engine(DATABASE_URL)
-Base.metadata.create_all(engine)
+def get_engine_and_session(database_url):
+    engine = create_engine(database_url)
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    return engine, Session()

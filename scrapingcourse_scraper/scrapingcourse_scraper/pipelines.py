@@ -1,45 +1,36 @@
 import os
 from scrapy import Spider
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
-from scrapingcourse_scraper.models import Hotel, Base, engine
+from sqlalchemy import engine
+from scrapingcourse_scraper.models import Hotel, Base, get_engine_and_session
 from PIL import Image
 import requests
 from io import BytesIO
 
 class ScrapingcourseScraperPipeline:
 
-    def __init__(self):
-         self.Session = sessionmaker(bind=engine)
-         
-
     def open_spider(self, spider):
-        self.session = self.Session()
+        # Initialize database session
+        database_url = os.getenv("DATABASE_URL", "postgresql+psycopg2://munne:munne123@postgres:5432/scraping_db")
+        self.engine, self.session = get_engine_and_session(database_url)  # Unpack the tuple here
 
     def close_spider(self, spider):
-        if self.session:
-            self.session.commit()
-            self.session.close()
+        # Close database session
+        self.session.commit()
+        self.session.close()
 
     def process_item(self, item, spider):
-    # Convert empty strings to None for numeric fields
-        def convert_to_numeric(value):
-            if value == '' or value is None:
-                return None
-            try:
-                return float(value)
-            except (ValueError, TypeError):
-                return None 
+
         hotel = Hotel(
             city_id=item['city_id'],
             hotel_name=item['hotelName'],
             hotel_address=item['hotelAddress'],
             hotel_img=self.save_image(item['hotelImg'], item['hotelName']),
-            price=convert_to_numeric(item['price']),
-            rating=convert_to_numeric(item['rating']),
+            price=(item['price']) or None,
+            rating=(item['rating']) or None,
             room_type=item['roomType'] or None,
-            lat=convert_to_numeric(item['lat']),
-            lng=convert_to_numeric(item['lng'])
+            lat=item['lat'] or None,
+            lng=item['lng'] or None,
         )
         self.session.add(hotel)
         return item
@@ -54,11 +45,10 @@ class ScrapingcourseScraperPipeline:
             # Download the image
             response = requests.get(img_url)
             img = Image.open(BytesIO(response.content))
-            img_name = f"{hotel_name.replace(' ', '_')}.jpg"
+            img_name = f"{hotel_name}_{os.path.basename(img_url)}"
             img_path = os.path.join(img_dir, img_name)
             img.save(img_path)
-            return img_path
+            return img_path  # Return the image path to store in the database
         except Exception as e:
-            Spider.logger.error(f"Failed to download image {img_url}: {e}")
+            print(f"Error saving image: {e}")
             return None
-

@@ -1,115 +1,102 @@
-import unittest
-from unittest import mock
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
-from scrapingcourse_scraper.pipelines import ScrapingcourseScraperPipeline
-from scrapingcourse_scraper.models import Hotel, Base, engine
 import os
+import unittest
+import tempfile
+import requests
+from unittest.mock import patch, MagicMock, mock_open
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from PIL import Image
+from io import BytesIO
+
+# Import the classes and modules to test
+from scrapingcourse_scraper.pipelines import ScrapingcourseScraperPipeline
+from scrapingcourse_scraper.models import Base, Hotel
 
 class TestScrapingcourseScraperPipeline(unittest.TestCase):
-
     def setUp(self):
-        # Setup an in-memory SQLite database for testing
-        self.Session = sessionmaker(bind=engine)
-        self.session = self.Session()
+        """Set up test environment before each test method"""
+        # Create a temporary SQLite in-memory database
+        self.test_engine = create_engine('sqlite:///:memory:')
+        Base.metadata.create_all(self.test_engine)
+        
+        # Create a session
+        TestSessionLocal = sessionmaker(bind=self.test_engine)
+        self.test_session = TestSessionLocal()
 
-        # Initialize pipeline and mock database session
+        # Create pipeline instance
         self.pipeline = ScrapingcourseScraperPipeline()
-        self.pipeline.session = self.session
-
-        # Create tables for Hotel model
-        Base.metadata.create_all(engine)
+        self.pipeline.engine = self.test_engine
+        self.pipeline.session = self.test_session
 
     def tearDown(self):
-        # Close the database session and dispose of the engine
-        self.session.close()
-        engine.dispose()
-        if os.path.exists('images'):
-            os.rmdir('images')  # Clean up the images directory if created
+        """Clean up after each test method"""
+        self.test_session.close()
 
-    @mock.patch('scrapingcourse_scraper.pipelines.ScrapingcourseScraperPipeline.save_image')
-    def test_process_item(self, mock_save_image):
-        # Mock save_image method
-        mock_save_image.return_value = 'images/mock_image.jpg'
+    
+    @patch('requests.get')
+    @patch('os.path.exists', return_value=True)
+    @patch('os.makedirs')
+    def test_save_image_successful(self, mock_makedirs, mock_exists, mock_requests_get):
+        """Test save_image method with a successful image download"""
+        # Create a mock image
+        mock_img = Image.new('RGB', (100, 100), color='red')
+        img_byte_arr = BytesIO()
+        mock_img.save(img_byte_arr, format='PNG')
+        img_byte_arr = img_byte_arr.getvalue()
 
-        # Setup an item that the pipeline will process
-        item = {
+        # Setup mocks
+        mock_response = MagicMock()
+        mock_response.content = img_byte_arr
+        mock_requests_get.return_value = mock_response
+
+        # Test image saving
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch('os.path.join', return_value=os.path.join(tmpdir, 'test_hotel_image.png')):
+                result = self.pipeline.save_image('http://example.com/image.png', 'Test Hotel')
+                
+                # Verify
+                self.assertTrue(os.path.exists(result))
+                mock_requests_get.assert_called_once_with('http://example.com/image.png')
+
+    def test_save_image_error_handling(self):
+        """Test save_image method error handling"""
+        # Simulate a request exception
+        with patch('requests.get', side_effect=requests.RequestException):
+            result = self.pipeline.save_image('http://example.com/image.png', 'Test Hotel')
+            self.assertIsNone(result)
+
+    def test_process_item_creates_hotel_record(self):
+        """Test process_item method creates a Hotel record"""
+        # Prepare test item
+        test_item = {
             'city_id': 1,
             'hotelName': 'Test Hotel',
             'hotelAddress': '123 Test St',
-            'hotelImg': 'https://example.com/image.jpg',
+            'hotelImg': 'http://example.com/image.png',
             'price': '100.50',
             'rating': '4.5',
-            'roomType': 'Single',
+            'roomType': 'Standard',
             'lat': '40.7128',
             'lng': '-74.0060'
         }
 
-        # Call the process_item method
-        processed_item = self.pipeline.process_item(item, None)
+        # Mock image saving
+        with patch.object(self.pipeline, 'save_image', return_value='test_image_path.jpg'):
+            # Process the item
+            processed_item = self.pipeline.process_item(test_item, None)
 
-        # Check if the save_image method was called correctly
-        mock_save_image.assert_called_once_with(item['hotelImg'], item['hotelName'])
+            # Verify the item was processed
+            self.assertEqual(processed_item, test_item)
 
-        # Verify the processed item
-        self.assertIsNotNone(processed_item)
-
-    def test_convert_to_numeric(self):
-        # Instantiate the pipeline
-        pipeline = ScrapingcourseScraperPipeline()
-
-        # Get the convert_to_numeric function
-        convert_to_numeric = pipeline.process_item(None, None)
-
-        # Test empty string conversion
-        self.assertIsNone(convert_to_numeric(''))
-
-        # Test valid numeric conversion
-        self.assertEqual(convert_to_numeric('100.50'), 100.50)
-
-        # Test invalid numeric conversion
-        self.assertIsNone(convert_to_numeric('not a number'))
-
-    @mock.patch('scrapy.pipelines.images.Pipeline.save_image')
-    def test_save_image(self, mock_save_image):
-        # Test the image saving method
-        mock_save_image.return_value = 'images/Test_Hotel.jpg'
-
-        result = mock_save_image(
-            'https://www.w3schools.com/html/img_girl.jpg',
-            'Test Hotel'
-        )
-
-        # Check the returned path
-        self.assertTrue(result.endswith('Test_Hotel.jpg'))
-        self.assertTrue(result.startswith('images/'))
-
-    @mock.patch('scrapingcourse_scraper.pipelines.ScrapingcourseScraperPipeline.save_image')
-    def test_save_image_error_handling(self, mock_save_image):
-        # Simulate an error in the image saving method
-        mock_save_image.side_effect = Exception('Failed to save image')
-
-        result = mock_save_image(
-            'https://www.w3schools.com/html/img_girl.jpg',
-            'Test Hotel'
-        )
-
-        # The result should be None since the image could not be saved
-        self.assertIsNone(result)
-
-    def test_directory_creation_for_images(self):
-        # Test if images directory is created if it doesn't exist
-        if os.path.exists('images'):
-            os.rmdir('images')  # Clean up if directory exists
-
-        pipeline = ScrapingcourseScraperPipeline()
-        pipeline.save_image('https://www.w3schools.com/html/img_girl.jpg', 'Test Hotel')
-
-        # Check if 'images' directory was created
-        self.assertTrue(os.path.exists('images'))
-
-        # Clean up the created directory
-        os.rmdir('images')
+            # Check database record
+            hotels = self.test_session.query(Hotel).all()
+            self.assertEqual(len(hotels), 1)
+            hotel = hotels[0]
+            
+            # Verify hotel details
+            self.assertEqual(hotel.hotel_name, 'Test Hotel')
+            self.assertEqual(hotel.price, 100.50)
+            self.assertEqual(hotel.rating, 4.5)
 
 if __name__ == '__main__':
     unittest.main()
