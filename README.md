@@ -126,7 +126,7 @@ Before running this project, ensure you have the following installed:
    ```bash
     docker-compose down
    ```
- - If you face any issue during building docker, you can stop the docker and again up the docker.
+ - If you face any issue during building docker, you can stop the docker container and again up the docker container.
    ```bash
     docker-compose down
     docker-compose up
