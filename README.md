@@ -145,9 +145,9 @@ You can view database in two ways through terminal pgAdmin.
 
       - Provide Admin Email: admin@admin.com and Password: admin123
 
-      - Right-click on "Servers" > Click on "Register" > "Server".
+      - Right-click on "Servers" > Click on "Register" > "Server" > Fill up the details > Save.
 
-      - Fill in the details:
+      - Fill up the details:
 
          General Tab:
          Name your connection: ScrapDB
@@ -216,8 +216,8 @@ Contributions are welcome! Here's how you can contribute:
 ### Fork the Repository
 
 ```bash
-- git clone https://github.com/Khairun-Nahar-Munne/hotel-management-system.git
-- cd hotel-management-system
+- git clone https://github.com/Khairun-Nahar-Munne/Scrapy.git
+- cd Scrapy
 ```
 
 ### Create a New Branch
