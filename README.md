@@ -5,12 +5,28 @@ The project is designed to scrape property information from **trip.com** and sto
 
 ## Table of Contents
 
+- [Features](#features)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
-- [Usage](#usage)
-- [Database Configuration](#database-configuration)
 - [Code Coverage](#code-coverage)
 - [Contributing](#contributing)
+
+## Features
+### Scraping Data
+It scraps data form trip.com. First, it randomly choices lactions between worldwide and Bangladesh. Then, the project selects 3 locations to scrape its information (property title, rating, location, latitude, longitude, room type, price and hotel image). 
+
+### Storing Images
+Images will be automatically downloaded and stored in a directory called `images`. The image file names will be stored as references in the database for later use.
+
+
+### Storing Data in PostgreSQL
+The scraper will automatically create the necessary database table and store hotel property data such as city_id, title as hotel name, rating, location, latitude, longitude, room type, price, and image references.
+
+### View data in pgAdmin
+You can view stored scraped data through pgadmin
+
+### Testing
+Testcase are written for scrapper file, pipelines, models and items. Test coverage is 87%.
 
 ## Project Structure
 
@@ -62,7 +78,8 @@ scrapingcourse_scraper/
 
 Before running this project, ensure you have the following installed:
 
-- **Python 3.3+** (for local development)
+- **Python 3x** (for local development)
+- **PostgreSQL** (for local development)
 - **Docker and Docker Compose**
    - Follow the official Docker installation guide to install Docker on your system: [Docker Installation Guide](https://docs.docker.com/desktop/)
 
@@ -92,14 +109,14 @@ Before running this project, ensure you have the following installed:
 3. Install depedencies
 
     ```bash
+    cd scrapingcourse_scraper
     pip install -r requirements.txt
     ```
 
 ### Running Application
-- Ensure Docker Desktop is running on your system, as it is required to manage the containers. Then, execute the following commands to build and run the application:
+- Ensure Docker Desktop is running on your system, as it is required to manage the containers. Then, execute the following commands to build and run the application in therminal (Scrapy/scrapingcourse_scraper) :
 
-   ```bash
-    cd scrapingcourse_scraper     
+   ```bash 
     docker-compose build
     docker-compose up
    ```
@@ -115,19 +132,7 @@ Before running this project, ensure you have the following installed:
     docker-compose up
    ```
 
-## Usage
-
-### Scraping Data
-It scraps data form trip.com. First, it randomly choices lactions between worldwide and Bangladesh. Then, the project selects 3 locations to scrape its information (property title, rating, location, latitude, longitude, room type, price and hotel image). 
-
-### Storing Images
-Images will be automatically downloaded and stored in a directory called `images`. The image file names will be stored as references in the database for later use.
-
-
-### Storing Data in PostgreSQL
-The scraper will automatically create the necessary database table and store hotel property data such as city_id, title as hotel name, rating, location, latitude, longitude, room type, price, and image references.
-
-#### Viewing Database Tables in the Docker Container
+### Viewing Database Tables in the Docker Container
 You can view database in two ways through terminal pgAdmin.
 
 - To view data from pgAdmin:
@@ -160,6 +165,8 @@ You can view database in two ways through terminal pgAdmin.
 
    This will display all the records stored in the `hotels` table.
 
+   ![Screenshot of the Landing Page](./screenshot/img5.png)
+
 
 - To inspect the database tables from terminal and view their data within the PostgreSQL container, follow these steps:
 
@@ -171,7 +178,8 @@ You can view database in two ways through terminal pgAdmin.
       ```
    2. Connect to the PostgreSQL Database
       ```bash
-      psql -U munne -d postgres
+      psql -U munne -d scraping_db
+      \c scraping_db
       ```
    3. Query the Database
    To view the data in the `hotels` table, execute the following SQL command:
@@ -187,11 +195,53 @@ You can view database in two ways through terminal pgAdmin.
 
 This can be tested using:
 
-```bash
-py run.py
-``
-  docker exec -it postgresDB_container psql -U munne scraping_db
-  \dt
+   ```bash
+   python3 run_tests.py
+   ```
+ You can also see code coverage in the terminal.
 
-   env\Scripts\activate  
-    SELECT * FROM public.hotels;
+ **Notice**: 
+
+ You can notice thate there are two meassages like Error saving image and No data found in 'outboundCities'. These expected and does not indicate a problem with the application.
+ 
+ Error saving image message is shown beacause the test ensures that if requests.get raises a RequestException while attempting to save an image, the save_image method returns None to handle the error gracefully. 
+ 
+ No data found in 'outboundCities' is shown beacause the test ensures that if there is no data for selected sity in the website script , it can handle the error gracefully.
+
+
+## Contributing
+
+Contributions are welcome! Here's how you can contribute:
+
+### Fork the Repository
+
+```bash
+- git clone https://github.com/Khairun-Nahar-Munne/hotel-management-system.git
+- cd hotel-management-system
+```
+
+### Create a New Branch
+
+```bash
+- git checkout -b feature/add-new-feature
+```
+
+### Make Modifications and Commit Changes
+
+```bash
+- git commit -m 'Add new feature: [brief description of the feature]'
+
+```
+
+### Push Changes to the Branch
+
+```bash
+- git push origin feature/add-new-feature
+
+```
+
+### Create a New Pull Request
+
+- Navigate to the repository on GitHub.
+- Click on the "Compare & pull request" button.
+- Fill in the pull request details and submit it for review.
