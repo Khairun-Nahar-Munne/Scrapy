@@ -79,7 +79,7 @@ scrapingcourse_scraper/
 Before running this project, ensure you have the following installed:
 
 - **Python 3x** (for local development)
-- **PostgreSQL** (for local development)
+- **Git** (for version control)
 - **Docker and Docker Compose**
    - Follow the official Docker installation guide to install Docker on your system: [Docker Installation Guide](https://docs.docker.com/desktop/)
 
