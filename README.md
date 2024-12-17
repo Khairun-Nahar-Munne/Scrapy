@@ -80,16 +80,16 @@ Before running this project, ensure you have the following installed:
    On Linux/macOS:
 
     ```bash
-    python3 -m venv venv  # or python -m venv venv 
-    source venv/bin/activate
+    python3 -m venv env  # or python -m venv env 
+    source env/bin/activate
     ```
    On Windows:
 
     ```bash
-    python3 -m venv venv   # or python -m venv venv 
-    venv\Scripts\activate
+    python3 -m venv env   # or python -m venv venv 
+    env\Scripts\activate
     ```
-2. Install requirements.txt
+3. Install depedencies
 
     ```bash
     pip install -r requirements.txt
@@ -131,6 +131,34 @@ The scraper will automatically create the necessary database table and store hot
 You can view database in two ways through terminal pgAdmin.
 
 - To view data from pgAdmin:
+   
+   1. Set Up pgAdmin
+   
+
+      ```
+      - Launch pgAdmin on http://localhost:5050 in your browser.
+
+      - Provide Admin Email: admin@admin.com and Password: admin123
+
+      - Right-click on "Servers" > Click on "Register" > "Server".
+
+      - Fill in the details:
+
+         General Tab:
+         Name your connection: ScrapDB
+
+         Connection Tab:
+         Host: postgres
+         Port: 5432 
+         Maintenance Database: postgres.
+         Username: munne
+         Password: munne123
+
+      ```
+   2. Click on Server > ScrapDB > scraping_db> Schemas > Tables > hotels
+   3. Right click on hotles > View/Edit Data> All Rows.
+
+   This will display all the records stored in the `hotels` table.
 
 
 - To inspect the database tables from terminal and view their data within the PostgreSQL container, follow these steps:
@@ -139,11 +167,11 @@ You can view database in two ways through terminal pgAdmin.
       Run the following command to open a bash shell inside the running database container:
       
       ```bash
-      docker exec -it postgres_db bash
+      docker exec -it postgresDB_container bash
       ```
    2. Connect to the PostgreSQL Database
       ```bash
-      psql -U username -d postgres
+      psql -U munne -d postgres
       ```
    3. Query the Database
    To view the data in the `hotels` table, execute the following SQL command:
@@ -152,21 +180,7 @@ You can view database in two ways through terminal pgAdmin.
       SELECT * FROM public.hotels;
       ```
       This will display all the records stored in the `hotels` table.
-
-
-## Database Configuration
-
-The connection string for PostgreSQL is stored in the environment variable `DATABASE_URL`. Here is an example of the connection string format:
-
-```bash
-postgresql://username:password@db/hotels_data
-```
-- **username:** The PostgreSQL username.
-- **password**: The PostgreSQL password.
-- **postgres**: The database name (this should be created beforehand or automatically, Check `docker-compose.yml`).
-- **hotels**: The table where hotel data will be stored.
-
-Make sure to adjust the DATABASE_URL environment variable in `docker-compose.yml` or your environment settings accordingly.    
+ 
 
 
 ## Code Coverage
