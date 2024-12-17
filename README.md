@@ -121,12 +121,12 @@ Before running this project, ensure you have the following installed:
     docker-compose up
    ```
    
-- To stop the application, press `Ctrl + C` or run: 
+- To stop the application, press `Ctrl + C` and run: 
 
    ```bash
     docker-compose down
    ```
- - If you face any issue during building docker, you can stop the docker container and again up the docker container.
+ - If you face any issue during building docker, you can stop the docker container, run docker container down command and again up the docker container.
    ```bash
     docker-compose down
     docker-compose up
