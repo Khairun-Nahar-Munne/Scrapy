@@ -121,19 +121,14 @@ Before running this project, ensure you have the following installed:
     docker-compose up
    ```
    
-- To stop the application, press `Ctrl + C` and run: 
-
-   ```bash
-    docker-compose down
-   ```
- - If you face any issue during building docker, you can stop the docker container, run docker container down command and again up the docker container.
+ - If you face any issue during building docker, you can stop the docker container (press `Ctrl + C`), run docker container down command and again up the docker container for running.
    ```bash
     docker-compose down
     docker-compose up
    ```
 
 ### Viewing Database Tables in the Docker Container
-You can view database in two ways through terminal pgAdmin.
+You can view database in two ways through terminal pgAdmin. You have to keep the docker-container running to view database.
 
 - To view data from pgAdmin:
    
